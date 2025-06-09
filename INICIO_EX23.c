@@ -2,16 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Nomes: 
- * 
- * Considere uma árvore (nao vetor lista encadeada grafo)
- * 
+/* Nomes dos Integrantes do Grupo e Contribuições:
+Arthur Contri: Teste e debug do codigo
+Giovanni Marcarini: Lapidação das funções busca_valor, busca_nome, contabiliza
+Rafael Vargas: Construção do codigo bruto inicial com as novas funções
+ * */
+
+/* Considere uma árvore (nao vetor lista encadeada grafo)
  * binária de busca.
- * 
+ *
  * A função insere já foi escrita pelo professor e ela precisa ler
  * o arquivo que já tem os dados a serem cadastros. Deixe o arquivo
  * na mesma pasta do código.
- * 
+ *
  * Você pode construir um arquivo de dados em TXT:
  * valor
  * salario
@@ -20,23 +23,23 @@
  * salario
  * nome
  * ....
- * 
- * Serão fornecidos alguns arquivos prontos 
- * 
+ *
+ * Serão fornecidos alguns arquivos prontos
+ *
  * Implemente as seguintes funções:
  * - função busca: ela retorna um ponteiro para o nó onde está a chave
- *   buscada ou NULL se não existe. A chave é o valor
+ * buscada ou NULL se não existe. A chave é o valor
  * - função buscaNome: ela retorna um ponteiro para o nó onde tem este
- *   nome ou NULL se não existe. Apesar do nome não ser a chave, considere
- *   que não há nomes repetidos.
+ * nome ou NULL se não existe. Apesar do nome não ser a chave, considere
+ * que não há nomes repetidos.
  * - funcão contabilidade: deve retornar a soma de todos os salários
  * - desaloca: ao final, realizar a desalocação de todos os nós da árvore.
- * 
+ *
  * */
 
 /* Estrutura "elgio complica IA". Varios arquivos, dificultando ou tornando
  * mais trabalhosa a solucao automatica por IA. Usem a IA para aprender (super
- * apoio) mas não para dar a resposta pronta o entregar ela sem nem olhar 
+ * apoio) mas não para dar a resposta pronta o entregar ela sem nem olhar
  * ou tentar entender o que fez
  * */
 
@@ -50,9 +53,9 @@
  * */
 #include "funcoesProf.c"
 
-/* Eu ja tenho as respostas. As tres funcoes prontas no meu 
+/* Eu ja tenho as respostas. As tres funcoes prontas no meu
  * arquivo resp.c. Nao liberei ele, está só comigo.
- * 
+ *
  * Se definir a macro GABARITO tenta incluir as respostas
  * Uso para meus testes aqui.
  * */
@@ -60,22 +63,70 @@
 #include "resp.c"
 #endif
 
+ARVORE *busca_valor(ARVORE *r, int valor) {
+    if (r == NULL) {
+        return NULL;
+    }
+    if (r->valor == valor) {
+        return r;
+    }
+    if (valor < r->valor) {
+        return busca_valor(r->e, valor);
+    } else {
+        return busca_valor(r->d, valor);
+    }
+}
+
+ARVORE *busca_nome(ARVORE *r, char *nome) {
+    if (r == NULL) {
+        return NULL;
+    }
+    if (strcmp(r->nome, nome) == 0) {
+        return r;
+    }
+    ARVORE *encontrado = busca_nome(r->e, nome);
+    if (encontrado != NULL) {
+        return encontrado;
+    }
+    encontrado = busca_nome(r->d, nome);
+    return encontrado;
+}
+
+
+double contabiliza(ARVORE *r) {
+    if (r == NULL) {
+        return 0.0;
+    }
+    
+    return r->salario + contabiliza(r->e) + contabiliza(r->d);
+}
+
+void desaloca(ARVORE *r) {
+    if (r == NULL) {
+        return;
+    }
+    desaloca(r->e); 
+    desaloca(r->d); 
+    free(r);        
+}
+
+
 int main(int argc, char *argv[])
 {
     ARVORE *r;                  // A raiz da árvore
     ARVORE *no;                 // o no atual
     ARVORE *resp;
     double totsal;
-    
+
     int total = 0;
     FILE *arq;
     int valor;
-    char nome[MAXSTR+1];
+    char nome[MAXSTR + 1];
 
     r = NULL;
     resp = NULL;
     no = NULL;
-    
+
     if (argc < 2) {
         fprintf(stderr, "ERRO. Você precisa fornecer o nome do arquivo com os dados\n");
         fprintf(stderr, "Sintaxe: %s arquivo.txt\n", argv[0]);
@@ -93,7 +144,7 @@ int main(int argc, char *argv[])
          */
         no = ledados(arq);
         if (no == NULL) {
-            /* não pôde criar o no. A função ledados já printou o motivo aqui apenas 
+            /* não pôde criar o no. A função ledados já printou o motivo aqui apenas
              * encerra o laço, pois não ter um nó é porque acabou o arquivo
              */
             break;
@@ -110,22 +161,22 @@ int main(int argc, char *argv[])
             // Não pode ser inserido. Já existe?
             free(no);
         } else {
-			total++;
-		}
+            total++;
+        }
     }
     fclose(arq);
-    
-    /* Aqui a árvore foi criada com os dados do arquivo. É apenas uma árvore binária 
+
+    /* Aqui a árvore foi criada com os dados do arquivo. É apenas uma árvore binária
      * de busca. Pode até ser uma zigzag. Depende de como os dados estavam no arquivo.
      * As funções de cadastro aqui apenas garantem ser de busca.
-     * 
+     *
      * Elas não tentam manter a árvore como (quase)completa
      * */
 
     printf("\n==================================\n");
     printf("Lido %d nos do arquivo \"%s\"", total, argv[1]);
     printf("\n==================================\n\n");
-    
+
 
 /* CUIDADO: para arvores grandes os prints de depuracao a seguir irao gerar
  * muita impressao. Use apenas para testar em arvores pequenas
@@ -144,57 +195,59 @@ int main(int argc, char *argv[])
     printf("\n\n");
 
     /* Aqui começa vocês:
-     * 
+     *
      * Implemente as seguintes funções:
      * - função busca: ela retorna um ponteiro para o nó onde está a chave
-     *   buscada ou NULL se não existe. A chave é o valor
+     * buscada ou NULL se não existe. A chave é o valor
      * - função buscaNome: ela retorna um ponteiro para o nó onde tem este
-     *   nome ou NULL se não existe. Apesar do nome não ser a chave, considere
-     *   que não há nomes repetidos.
+     * nome ou NULL se não existe. Apesar do nome não ser a chave, considere
+     * que não há nomes repetidos.
      * - funcão contabilidade: deve retornar a soma de todos os salários
      * - desaloca: ao final, realizar a desalocação de todos os nós da árvore.
-     * 
+     *
      * Já dei sugestões de leitura e da invocação das funções.
      * Mas a partir daqui vocês adaptam do seu jeito.
      */
-    
-    
+
+
     printf("Digite um valor a ser buscado:\n");
     scanf("%d", &valor);
-    
+
     /* Comentado abaixo porque não existe a função busca_valor
      * Você deve inmplementar ela
      * */
-    // resp = busca_valor(r, valor);
-	
-	if (resp == NULL){
-		printf("%d não encontrado na árvore\n", valor);
-	} else {
-		printf("Achei %d\n", valor);
-		imprimeNO(resp);
-	}
-	
+    resp = busca_valor(r, valor); // Chamada da função busca_valor
+
+    if (resp == NULL) {
+        printf("%d não encontrado na árvore\n", valor);
+    } else {
+        printf("Achei %d\n", valor);
+        imprimeNO(resp);
+    }
+
     printf("Digite um nome a ser encontrado:\n");
+    // Limpa o buffer do teclado antes de ler a string
+    while (getchar() != '\n');
     lestringARQ(nome, MAXSTR, stdin);
-    
+
     /* Comentado abaixo porque não existe a função busca_nome
      * Você deve inmplementar ela
      * */
-    // resp = busca_nome(r, nome);
+    resp = busca_nome(r, nome); // Chamada da função busca_nome
 
-	if (resp == NULL){
-		printf("%s não encontrado na árvore\n", nome);
-	} else {
-		printf("Achei %d\n", valor);
-		imprimeNO(resp);
-	}    
-	
-	// totsal = contabiliza(r);
-    /* A funcao contabiliza você implementa. Ela deve retornar a soma 
+    if (resp == NULL) {
+        printf("%s não encontrado na árvore\n", nome);
+    } else {
+        printf("Achei %s\n", nome); // Corrigido para imprimir o nome
+        imprimeNO(resp);
+    }
+
+    totsal = contabiliza(r); // Chamada da função contabiliza
+    /* A funcao contabiliza você implementa. Ela deve retornar a soma
      * de todos os salários
      * */
-	printf("Total de salarios = R$ %7.2lf\n", totsal);
-    // DESALOCA
-    // desaloca(r);
-}
+    printf("Total de salarios = R$ %7.2lf\n", totsal);
 
+    desaloca(r);
+    printf("Árvore desalocada com sucesso.\n");
+}
